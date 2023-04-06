@@ -1,6 +1,10 @@
 package com.core.bean;
 
 public class PromptData {
+    /**
+     * apiKey openAI的apikey
+     */
+    private String apiKey;
 
     private String model;
 
@@ -38,20 +42,10 @@ public class PromptData {
      * 每个可能的补全的概率值的对数。
      */
     private Object logprobs;
-    private String stop;
+    private String[] stop;
     public PromptData() {
     }
-    public PromptData(String model, String prompt, int max_tokens, int temperature, float top_p, int n, boolean stream, Object logprobs, String stop) {
-        this.model = model;
-        this.prompt = prompt;
-        this.max_tokens = max_tokens;
-        this.temperature = temperature;
-        this.top_p = top_p;
-        this.n = n;
-        this.stream = stream;
-        this.logprobs = logprobs;
-        this.stop = stop;
-    }
+
 
     public String getModel() {
         return model;
@@ -117,11 +111,39 @@ public class PromptData {
         this.logprobs = logprobs;
     }
 
-    public String getStop() {
+    public String[] getStop() {
         return stop;
     }
 
-    public void setStop(String stop) {
+    public void setStop(String[] stop) {
         this.stop = stop;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    public void setMax_tokens(Integer max_tokens) {
+        this.max_tokens = max_tokens;
+    }
+
+    public void setTemperature(Integer temperature) {
+        this.temperature = temperature;
+    }
+
+    public void setN(Integer n) {
+        this.n = n;
+    }
+
+    public Boolean getStream() {
+        return stream;
+    }
+
+    public void setStream(Boolean stream) {
+        this.stream = stream;
     }
 }

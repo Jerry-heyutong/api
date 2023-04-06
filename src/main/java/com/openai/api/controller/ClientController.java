@@ -29,19 +29,18 @@ public class ClientController  {
     RestTemplate restTemplate;
 
     private static final String OPENAI_URL = "https://api.openai.com/v1/completions";
-    //private static final String APP_KEY = "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";
-    //private static String APP_KEY = "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";
     private String apiKey = "";
 
     @PostMapping("completions")
     @ApiOperation("会话接口")
-    ResponseEntity<JSONObject> completions(@RequestBody PromptData promptData,String apiKey) {
+    ResponseEntity<JSONObject> completions(@RequestBody PromptData promptData) {
         log.info("进入会话.."+promptData.getPrompt());
         if(apiKey!=null){
-            this.apiKey = apiKey;
+            this.apiKey = promptData.getApiKey();;
         }
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + apiKey);
+        headers.add("Content-Type", "application/json");
         HttpEntity<PromptData> httpEntity = new HttpEntity<>(promptData, headers);
         ResponseEntity<JSONObject> jsonObjectResponseEntity = restTemplate.postForEntity(OPENAI_URL, httpEntity, JSONObject.class);
         log.info(jsonObjectResponseEntity.toString());
