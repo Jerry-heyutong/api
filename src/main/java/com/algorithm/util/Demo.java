@@ -1,3 +1,4 @@
+/*
 package com.algorithm.util;
 
 import java.io.BufferedReader;
@@ -22,10 +23,12 @@ public class Demo {
         textToStr("D:/测试.txt");
     }
 
-    /**
+    */
+/**
      * 字符串文本阅读
      * @param str 要读的文字字符串
-     */
+     *//*
+
     public static void readStr(String str){
         ActiveXComponent ax = new ActiveXComponent("Sapi.SpVoice");
         //运行时输出语音内容
@@ -38,10 +41,12 @@ public class Demo {
         Dispatch.call(spVoice,"Speak",new Variant(str));
     }
 
-    /**
+    */
+/**
      * 字符串文本转 wav格式 语音文件
      * @param text 要读的文字字符串
-     */
+     *//*
+
     public static void textToSpeechIO(String text){
         ActiveXComponent ax = null;
         Dispatch spFileStream = null;
@@ -85,11 +90,13 @@ public class Demo {
         }
     }
 
-    /**
+    */
+/**
      * txt文件转字符串
      * @param fileName txt文件所在位置
      * @return txt文件中的字符串
-     */
+     *//*
+
     public static String textToStr(String fileName){
         BufferedReader reader = null;
         try {
@@ -113,3 +120,4 @@ public class Demo {
     }
 
 }
+*/
