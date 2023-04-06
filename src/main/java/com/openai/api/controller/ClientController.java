@@ -30,14 +30,18 @@ public class ClientController  {
 
     private static final String OPENAI_URL = "https://api.openai.com/v1/completions";
     //private static final String APP_KEY = "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";
-    private static final String APP_KEY = "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";
+    //private static String APP_KEY = "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";
+    private String apiKey = "";
 
     @PostMapping("completions")
     @ApiOperation("会话接口")
-    ResponseEntity<JSONObject> completions(@RequestBody PromptData promptData) {
+    ResponseEntity<JSONObject> completions(@RequestBody PromptData promptData,String apiKey) {
         log.info("进入会话.."+promptData.getPrompt());
+        if(apiKey!=null){
+            this.apiKey = apiKey;
+        }
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + APP_KEY);
+        headers.add("Authorization", "Bearer " + apiKey);
         HttpEntity<PromptData> httpEntity = new HttpEntity<>(promptData, headers);
         ResponseEntity<JSONObject> jsonObjectResponseEntity = restTemplate.postForEntity(OPENAI_URL, httpEntity, JSONObject.class);
         log.info(jsonObjectResponseEntity.toString());
@@ -49,7 +53,7 @@ public class ClientController  {
     void completions(HttpServletResponse response, @RequestBody PromptData promptData) throws IOException {
         promptData.setStream(true);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + APP_KEY);
+        headers.add("Authorization", "Bearer " + apiKey);
         HttpEntity<PromptData> httpEntity = new HttpEntity<>(promptData, headers);
         ResponseEntity<org.springframework.core.io.Resource> resource = restTemplate.postForEntity(OPENAI_URL, httpEntity, org.springframework.core.io.Resource.class);
         org.springframework.core.io.Resource body = resource.getBody();
