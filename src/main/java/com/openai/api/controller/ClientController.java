@@ -1,17 +1,17 @@
 package com.openai.api.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.core.bean.PromptData;
+import com.core.bean.chatgpt.GPTResp;
+import com.core.bean.chatgpt.PromptData;
+import com.core.bean.ResultEntity;
+import com.core.bean.ResultFactory;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
@@ -24,7 +24,7 @@ import java.nio.charset.StandardCharsets;
 @RequestMapping("/v1/api")
 @Api(tags = "openAI接口")
 @Slf4j
-public class ClientController  {
+public class ClientController {
     @Resource
     RestTemplate restTemplate;
 
@@ -33,18 +33,30 @@ public class ClientController  {
 
     @PostMapping("completions")
     @ApiOperation("会话接口")
-    ResponseEntity<JSONObject> completions(@RequestBody PromptData promptData) {
-        log.info("进入会话.."+promptData.getPrompt());
-        if(apiKey!=null){
-            this.apiKey = promptData.getApiKey();;
+    ResultEntity<String> completions(@RequestBody PromptData promptData, @RequestParam String apiKey) {
+        log.info("进入会话.." + promptData.getPrompt());
+        if (apiKey != null) {
+            this.apiKey = apiKey;
+            ;
         }
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + apiKey);
         headers.add("Content-Type", "application/json");
         HttpEntity<PromptData> httpEntity = new HttpEntity<>(promptData, headers);
         ResponseEntity<JSONObject> jsonObjectResponseEntity = restTemplate.postForEntity(OPENAI_URL, httpEntity, JSONObject.class);
-        log.info(jsonObjectResponseEntity.toString());
-        return jsonObjectResponseEntity;
+        StringBuilder result= new StringBuilder();
+        if (jsonObjectResponseEntity.getBody() != null) {
+            GPTResp resp = JSONObject.parseObject(jsonObjectResponseEntity.getBody().toString(), GPTResp.class);
+            GPTResp.Choice[] choices = resp.getChoices();
+            for (GPTResp.Choice choice: choices ) {
+                String text = choice.getText();
+                log.info(text);
+                result.append(text);
+            }
+        }else{
+            log.warn(jsonObjectResponseEntity.toString());
+        }
+        return ResultFactory.success(result.toString());
     }
 
     @PostMapping("completions/stream")
@@ -56,13 +68,13 @@ public class ClientController  {
         HttpEntity<PromptData> httpEntity = new HttpEntity<>(promptData, headers);
         ResponseEntity<org.springframework.core.io.Resource> resource = restTemplate.postForEntity(OPENAI_URL, httpEntity, org.springframework.core.io.Resource.class);
         org.springframework.core.io.Resource body = resource.getBody();
-        if(body == null){
-            return ;
+        if (body == null) {
+            return;
         }
-       byte[] bytes = new byte[1024];
+        byte[] bytes = new byte[1024];
         InputStream inputStream = body.getInputStream();
         StringBuilder sb = new StringBuilder();
-        while(inputStream.read(bytes)>-1){
+        while (inputStream.read(bytes) > -1) {
             sb.append(new String(bytes, StandardCharsets.UTF_8));
         }
         byte[] result = sb.toString().getBytes(StandardCharsets.UTF_8);

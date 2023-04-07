@@ -1,10 +1,6 @@
-package com.core.bean;
+package com.core.bean.chatgpt;
 
 public class PromptData {
-    /**
-     * apiKey openAI的apikey
-     */
-    private String apiKey;
 
     private String model;
 
@@ -117,14 +113,6 @@ public class PromptData {
 
     public void setStop(String[] stop) {
         this.stop = stop;
-    }
-
-    public String getApiKey() {
-        return apiKey;
-    }
-
-    public void setApiKey(String apiKey) {
-        this.apiKey = apiKey;
     }
 
     public void setMax_tokens(Integer max_tokens) {
