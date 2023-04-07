@@ -5,6 +5,7 @@ import com.core.bean.chatgpt.GPTResp;
 import com.core.bean.chatgpt.PromptData;
 import com.core.bean.ResultEntity;
 import com.core.bean.ResultFactory;
+import com.openai.api.component.ChatSession;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -19,12 +20,15 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/v1/api")
 @Api(tags = "openAI接口")
 @Slf4j
 public class ClientController {
+    public ConcurrentHashMap<String, ChatSession> sessionMap = new ConcurrentHashMap<>(16);
     @Resource
     RestTemplate restTemplate;
 
@@ -37,23 +41,37 @@ public class ClientController {
         log.info("进入会话.." + promptData.getPrompt());
         if (apiKey != null) {
             this.apiKey = apiKey;
-            ;
+        }
+        ChatSession chatSession;
+        //首先获取上下文
+        if (sessionMap.contains(apiKey)) {
+            chatSession = sessionMap.get(apiKey);
+            StringBuilder prompts = new StringBuilder(chatSession.getPromptData().getPrompt());
+            String inputPromt = promptData.getPrompt();
+            prompts.append(inputPromt);
+            promptData.setPrompt(prompts.toString());
+        }else{
+            chatSession = new ChatSession();
+            chatSession.setPromptData(promptData);
+            chatSession.setApiKey(apiKey);
+            sessionMap.put(chatSession.getApiKey(),chatSession);
         }
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + apiKey);
         headers.add("Content-Type", "application/json");
         HttpEntity<PromptData> httpEntity = new HttpEntity<>(promptData, headers);
         ResponseEntity<JSONObject> jsonObjectResponseEntity = restTemplate.postForEntity(OPENAI_URL, httpEntity, JSONObject.class);
-        StringBuilder result= new StringBuilder();
+        StringBuilder result = new StringBuilder();
         if (jsonObjectResponseEntity.getBody() != null) {
             GPTResp resp = JSONObject.parseObject(jsonObjectResponseEntity.getBody().toString(), GPTResp.class);
             GPTResp.Choice[] choices = resp.getChoices();
-            for (GPTResp.Choice choice: choices ) {
+            for (GPTResp.Choice choice : choices) {
                 String text = choice.getText();
                 log.info(text);
                 result.append(text);
+                promptData.setPrompt(promptData.getPrompt()+text);
             }
-        }else{
+        } else {
             log.warn(jsonObjectResponseEntity.toString());
         }
         return ResultFactory.success(result.toString());
