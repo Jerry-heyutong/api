@@ -5,6 +5,7 @@ import com.core.bean.chatgpt.GPTResp;
 import com.core.bean.chatgpt.PromptData;
 import com.core.bean.ResultEntity;
 import com.core.bean.ResultFactory;
+import com.openai.api.OpenAIAPIEnum;
 import com.openai.api.component.ChatSession;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -32,11 +33,10 @@ public class ClientController {
     @Resource
     RestTemplate restTemplate;
 
-    private static final String OPENAI_URL = "https://api.openai.com/v1/completions";
     private String apiKey = "";
 
     @PostMapping("completions")
-    @ApiOperation("会话接口")
+    @ApiOperation("补全接口")
     ResultEntity<String> completions(@RequestBody PromptData promptData, @RequestParam String apiKey) {
         log.info("进入会话.." + promptData.getPrompt());
         if (apiKey != null) {
@@ -60,7 +60,7 @@ public class ClientController {
         headers.add("Authorization", "Bearer " + apiKey);
         headers.add("Content-Type", "application/json");
         HttpEntity<PromptData> httpEntity = new HttpEntity<>(promptData, headers);
-        ResponseEntity<JSONObject> jsonObjectResponseEntity = restTemplate.postForEntity(OPENAI_URL, httpEntity, JSONObject.class);
+        ResponseEntity<JSONObject> jsonObjectResponseEntity = restTemplate.postForEntity(OpenAIAPIEnum.COMPLETIONS.getUrl(), httpEntity, JSONObject.class);
         StringBuilder result = new StringBuilder();
         if (jsonObjectResponseEntity.getBody() != null) {
             GPTResp resp = JSONObject.parseObject(jsonObjectResponseEntity.getBody().toString(), GPTResp.class);
@@ -84,7 +84,7 @@ public class ClientController {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + apiKey);
         HttpEntity<PromptData> httpEntity = new HttpEntity<>(promptData, headers);
-        ResponseEntity<org.springframework.core.io.Resource> resource = restTemplate.postForEntity(OPENAI_URL, httpEntity, org.springframework.core.io.Resource.class);
+        ResponseEntity<org.springframework.core.io.Resource> resource = restTemplate.postForEntity(OpenAIAPIEnum.COMPLETIONS.getUrl(), httpEntity, org.springframework.core.io.Resource.class);
         org.springframework.core.io.Resource body = resource.getBody();
         if (body == null) {
             return;

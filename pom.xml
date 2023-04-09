@@ -20,6 +20,7 @@
         <!--        spring-->
         <spring-boot.version>2.2.5.RELEASE</spring-boot.version>
         <spring-boot-openfeign.version>2.2.5.RELEASE</spring-boot-openfeign.version>
+        <dingtalk-sdk-version>1.2.15</dingtalk-sdk-version>
         <fastjson.version>1.2.58</fastjson.version>
     </properties>
     <dependencies>
@@ -78,6 +79,16 @@
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger-ui</artifactId>
             <version>2.9.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>dingtalk</artifactId>
+            <version>${dingtalk-sdk-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.guerlab.cloud.dingtalk</groupId>
+            <artifactId>guerlab-cloud-dingtalk-core</artifactId>
+            <version>2022.1.0</version>
         </dependency>
     </dependencies>
     <build>
