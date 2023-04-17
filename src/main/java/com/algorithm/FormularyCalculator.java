@@ -44,15 +44,15 @@ public abstract class FormularyCalculator {
             } else {
                 return calculate(leftExpression + calculate + rightExpression);
             }
-        } else if (expression.contains(OperatorEnum.PLUS.operatorName) || expression.contains(OperatorEnum.SUBSTRACT.operatorName)) {
+        } else if (expression.contains(OperatorEnum.PLUS.operatorName) || expression.contains(OperatorEnum.SUBTRACT.operatorName)) {
             //分离出 加号或者减号 前的子式 leftExpression 和 加号或减号 后的子式 rightExpression
             if (expression.contains(OperatorEnum.PLUS.operatorName)) {
                 String leftExpression = expression.substring(0, expression.indexOf(OperatorEnum.PLUS.operatorName));
                 String rightExpression = expression.substring(expression.indexOf(OperatorEnum.PLUS.operatorName) + 1);
                 return calculate(leftExpression).add(calculate(rightExpression));
             } else {
-                String leftExpression = expression.substring(0, expression.indexOf(OperatorEnum.SUBSTRACT.operatorName));
-                String rightExpression = expression.substring(expression.indexOf(OperatorEnum.SUBSTRACT.operatorName) + 1);
+                String leftExpression = expression.substring(0, expression.indexOf(OperatorEnum.SUBTRACT.operatorName));
+                String rightExpression = expression.substring(expression.indexOf(OperatorEnum.SUBTRACT.operatorName) + 1);
                 return calculate(leftExpression).subtract(calculate(rightExpression));
             }
         } else if (expression.contains(OperatorEnum.MULTIPLY.operatorName) || expression.contains(OperatorEnum.DIVIDE.operatorName)) {
@@ -110,8 +110,8 @@ public abstract class FormularyCalculator {
         for (Map.Entry<String, String> entry : params.entrySet()) {
             String value = entry.getValue();
             //为避免参数值和公式冲突，需要处理负号
-            if (value.contains(OperatorEnum.SUBSTRACT.operatorName)) {
-                value = value.replaceAll(OperatorEnum.SUBSTRACT.operatorName, "F");
+            if (value.contains(OperatorEnum.SUBTRACT.operatorName)) {
+                value = value.replaceAll(OperatorEnum.SUBTRACT.operatorName, "F");
             }
             expression = expression.replaceAll(entry.getKey(), value);
         }
@@ -141,7 +141,7 @@ public abstract class FormularyCalculator {
         /**
          * 减
          */
-        SUBSTRACT("-"),
+        SUBTRACT("-"),
         /**
          * 乘
          */
