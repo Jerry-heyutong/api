@@ -14,14 +14,27 @@ import java.util.Map;
 public abstract class FormularyCalculator {
 
     /**
-     * 负号
+     * 负号占位符，用户自定义，不要冲突。
      */
-    public String negative;
+    private final String negative;
+
+    private int scale = 6;
 
     /**
      * 公式
      */
     private String expression;
+
+    public FormularyCalculator(String negative) {
+        this.negative = negative;
+        init();
+    }
+
+    public FormularyCalculator(String negative, int scale) {
+        this.negative = negative;
+        this.scale = scale;
+        init();
+    }
 
 
     /**
@@ -51,12 +64,13 @@ public abstract class FormularyCalculator {
                 String rightExpression = expression.substring(expression.indexOf(OperatorEnum.PLUS.operatorName) + 1);
                 return calculate(leftExpression).add(calculate(rightExpression));
             } else {
-                String leftExpression = expression.substring(0, expression.indexOf(OperatorEnum.SUBTRACT.operatorName));
-                String rightExpression = expression.substring(expression.indexOf(OperatorEnum.SUBTRACT.operatorName) + 1);
+                //负号后的子式需要变号
+                String leftExpression = expression.substring(0, expression.lastIndexOf(OperatorEnum.SUBTRACT.operatorName));
+                String rightExpression = expression.substring(expression.lastIndexOf(OperatorEnum.SUBTRACT.operatorName) + 1);
                 return calculate(leftExpression).subtract(calculate(rightExpression));
             }
         } else if (expression.contains(OperatorEnum.MULTIPLY.operatorName) || expression.contains(OperatorEnum.DIVIDE.operatorName)) {
-            //分离出 加号或者减号 前的子式 leftExpression 和 加号或减号 后的子式 rightExpression
+            //分离出 加号或者减号 前的子式 leftExpression 和 加号或减号 后的子式 rightExpression,之后对各个子式进行递归计算
             if (expression.contains(OperatorEnum.MULTIPLY.operatorName)) {
                 String leftExpression = expression.substring(0, expression.indexOf(OperatorEnum.MULTIPLY.operatorName));
                 String rightExpression = expression.substring(expression.indexOf(OperatorEnum.MULTIPLY.operatorName) + 1);
@@ -68,9 +82,10 @@ public abstract class FormularyCalculator {
                 if (BigDecimal.ZERO.equals(denominator)) {
                     throw new RuntimeException("分母不能为0!");
                 }
-                return calculate(leftExpression).divide(denominator, 6, RoundingMode.HALF_UP);
+                return calculate(leftExpression).divide(denominator, scale, RoundingMode.HALF_UP);
             }
         } else {
+            //递归结束条件
             if (expression.contains(negative)) {
                 //处理负号
                 String s = expression.replaceAll(negative, "");
@@ -85,10 +100,6 @@ public abstract class FormularyCalculator {
         }
     }
 
-    public FormularyCalculator(String negative) {
-        this.negative = negative;
-        init();
-    }
 
     /**
      * 初始化计算器
@@ -172,15 +183,21 @@ public abstract class FormularyCalculator {
     }
 
     public static void main(String[] args) {
-        Map<String,FormularyCalculator> map= new HashMap<>(1000000);
+        Map<String, FormularyCalculator> map = new HashMap<>(1);
         long s = System.currentTimeMillis();
-        for (int i = 0; i <1000000; i++) {
-            //String expression = "a + b * c / (a - 3 * c +(5 * d / e ))";
-            String expression = "累计营收*0.3 + 累计回款*0.7- 往年累计结算";
+        for (int i = 0; i < 1; i++) {
+            //String expression = "a-b-c";
+            String expression = "(累计营收*0.3 + 累计回款*0.7- 往年累计结算-外包费用-单列成本+其他应补应扣-归档保证金)*协作比例-投标项目奖励";
             HashMap<String, String> params = new HashMap<>();
-            params.put("累计营收", "3210382.33");
-            params.put("累计回款", "3258291.22");
-            params.put("往年累计结算", "132131.22");
+            params.put("累计营收", "10000");
+            params.put("累计回款", "10000");
+            params.put("往年累计结算", "10000");
+            params.put("外包费用", "10000");
+            params.put("单列成本", "10000");
+            params.put("其他应补应扣", "10000");
+            params.put("归档保证金", "10000");
+            params.put("协作比例", "10000");
+            params.put("投标项目奖励", "10000");
             FormularyCalculator formularyCalculator = new FormularyCalculator("F") {
                 @Override
                 String initExpression() {
@@ -192,14 +209,14 @@ public abstract class FormularyCalculator {
                     return params;
                 }
             };
-           map.put(expression,formularyCalculator);
+            map.put(expression, formularyCalculator);
         }
         long e1 = System.currentTimeMillis();
-        System.out.println("1耗时:" +(e1-s));
+        System.out.println("1耗时:" + (e1 - s));
         for (Map.Entry<String, FormularyCalculator> calculatorEntry : map.entrySet()) {
-            System.out.println( calculatorEntry.getValue().calculateWithParams());
+            System.out.println(calculatorEntry.getValue().calculateWithParams());
         }
         long e = System.currentTimeMillis();
-        System.out.println("2耗时:" +(e-e1));
+        System.out.println("2耗时:" + (e - e1));
     }
 }
