@@ -76,8 +76,8 @@ public abstract class FormularyCalculator {
                 String rightExpression = expression.substring(expression.indexOf(OperatorEnum.MULTIPLY.operatorName) + 1);
                 return calculate(leftExpression).multiply(calculate(rightExpression));
             } else {
-                String leftExpression = expression.substring(0, expression.indexOf(OperatorEnum.DIVIDE.operatorName));
-                String rightExpression = expression.substring(expression.indexOf(OperatorEnum.DIVIDE.operatorName) + 1);
+                String leftExpression = expression.substring(0, expression.lastIndexOf(OperatorEnum.DIVIDE.operatorName));
+                String rightExpression = expression.substring(expression.lastIndexOf(OperatorEnum.DIVIDE.operatorName) + 1);
                 BigDecimal denominator = calculate(rightExpression);
                 if (BigDecimal.ZERO.equals(denominator)) {
                     throw new RuntimeException("分母不能为0!");
