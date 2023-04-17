@@ -18,36 +18,10 @@ public abstract class FormularyCalculator {
      */
     public String negative;
 
-    public static void main(String[] args) {
-        String expression = " ( a + b ) * c / d - e - e";
-        HashMap<String, String> params = new HashMap<>();
-        params.put("a", "1");
-        params.put("b", "1");
-        params.put("c", "1");
-        params.put("d", "1");
-        params.put("e", "-1");
-        FormularyCalculator formularyCalculator = new FormularyCalculator("F") {
-            @Override
-            String initExpression() {
-                return expression;
-            }
-
-            @Override
-            Map<String, String> initParams() {
-                return params;
-            }
-        };
-        BigDecimal calculate = formularyCalculator.calculateWithParams();
-        System.out.println(formularyCalculator.expression);
-        System.out.println(calculate);
-        params.put("e", "0");
-        formularyCalculator.init();
-        System.out.println(formularyCalculator.expression);
-        System.out.println(formularyCalculator.calculateWithParams());
-    }
-
+    /**
+     * 公式
+     */
     private String expression;
-
 
 
     /**
@@ -60,12 +34,16 @@ public abstract class FormularyCalculator {
 
     private BigDecimal calculate(String expression) {
         if (expression.contains(OperatorEnum.BRACKET_LEFT.operatorName) || expression.contains(OperatorEnum.BRACKET_RIGHT.operatorName)) {
-            //分离出括号中的子式 subExpression、括号前式 leftExpression、括号后式 rightExpression
+            //分离出括号中的前式 leftExpression、子式 subExpression、后式 rightExpression
             String leftExpression = expression.substring(0, expression.indexOf(OperatorEnum.BRACKET_LEFT.operatorName));
-            String subExpression = expression.substring(expression.indexOf(OperatorEnum.BRACKET_LEFT.operatorName) + 1, expression.indexOf(OperatorEnum.BRACKET_RIGHT.operatorName));
-            String rightExpression = expression.substring(expression.indexOf(OperatorEnum.BRACKET_RIGHT.operatorName) + 1);
-            expression = leftExpression + calculate(subExpression) + rightExpression;
-            return calculate(expression);
+            String subExpression = expression.substring(expression.indexOf(OperatorEnum.BRACKET_LEFT.operatorName) + 1, expression.lastIndexOf(OperatorEnum.BRACKET_RIGHT.operatorName));
+            String rightExpression = expression.substring(expression.lastIndexOf(OperatorEnum.BRACKET_RIGHT.operatorName) + 1);
+            BigDecimal calculate = calculate(subExpression);
+            if (calculate.compareTo(BigDecimal.ZERO) < 0) {
+                return calculate(leftExpression + negative + calculate.toString().replaceAll("-", "") + rightExpression);
+            } else {
+                return calculate(leftExpression + calculate + rightExpression);
+            }
         } else if (expression.contains(OperatorEnum.PLUS.operatorName) || expression.contains(OperatorEnum.SUBSTRACT.operatorName)) {
             //分离出 加号或者减号 前的子式 leftExpression 和 加号或减号 后的子式 rightExpression
             if (expression.contains(OperatorEnum.PLUS.operatorName)) {
@@ -87,17 +65,23 @@ public abstract class FormularyCalculator {
                 String leftExpression = expression.substring(0, expression.indexOf(OperatorEnum.DIVIDE.operatorName));
                 String rightExpression = expression.substring(expression.indexOf(OperatorEnum.DIVIDE.operatorName) + 1);
                 BigDecimal denominator = calculate(rightExpression);
-                if(BigDecimal.ZERO.equals(denominator)){
-                    throw new RuntimeException("分母不能为0!:"+rightExpression);
+                if (BigDecimal.ZERO.equals(denominator)) {
+                    throw new RuntimeException("分母不能为0!");
                 }
-                return calculate(leftExpression).divide(denominator,6, RoundingMode.HALF_UP);
+                return calculate(leftExpression).divide(denominator, 6, RoundingMode.HALF_UP);
             }
-        }else {
-            if(expression.contains(negative)){
-                return new BigDecimal(expression.replaceAll(negative,"")).multiply(new BigDecimal("-1"));
-            }else{
-                return new BigDecimal(expression);
+        } else {
+            if (expression.contains(negative)) {
+                //处理负号
+                String s = expression.replaceAll(negative, "");
+                return new BigDecimal("-1").multiply(calculate(s));
             }
+
+            BigDecimal result = new BigDecimal(expression);
+            if (result.compareTo(BigDecimal.ZERO) < 0) {
+                return calculate(negative + expression);
+            }
+            return result;
         }
     }
 
@@ -118,7 +102,7 @@ public abstract class FormularyCalculator {
      * 解析公式和参数
      *
      * @param expression 获取到的表达式 例:   ( a + b ) * c / d - e
-     * @param params 获取到的参数map
+     * @param params     获取到的参数map
      * @return 解析后的表达式
      */
     private String analyze(String expression, Map<String, String> params) {
@@ -126,10 +110,10 @@ public abstract class FormularyCalculator {
         for (Map.Entry<String, String> entry : params.entrySet()) {
             String value = entry.getValue();
             //为避免参数值和公式冲突，需要处理负号
-            if(value.contains(OperatorEnum.SUBSTRACT.operatorName)){
-                value = value.replaceAll(OperatorEnum.SUBSTRACT.operatorName,"F");
+            if (value.contains(OperatorEnum.SUBSTRACT.operatorName)) {
+                value = value.replaceAll(OperatorEnum.SUBSTRACT.operatorName, "F");
             }
-            expression = expression.replaceAll(entry.getKey(),value);
+            expression = expression.replaceAll(entry.getKey(), value);
         }
         return expression;
     }
@@ -187,4 +171,35 @@ public abstract class FormularyCalculator {
         }
     }
 
+    public static void main(String[] args) {
+        Map<String,FormularyCalculator> map= new HashMap<>(1000000);
+        long s = System.currentTimeMillis();
+        for (int i = 0; i <1000000; i++) {
+            //String expression = "a + b * c / (a - 3 * c +(5 * d / e ))";
+            String expression = "累计营收*0.3 + 累计回款*0.7- 往年累计结算";
+            HashMap<String, String> params = new HashMap<>();
+            params.put("累计营收", "3210382.33");
+            params.put("累计回款", "3258291.22");
+            params.put("往年累计结算", "132131.22");
+            FormularyCalculator formularyCalculator = new FormularyCalculator("F") {
+                @Override
+                String initExpression() {
+                    return expression;
+                }
+
+                @Override
+                Map<String, String> initParams() {
+                    return params;
+                }
+            };
+           map.put(expression,formularyCalculator);
+        }
+        long e1 = System.currentTimeMillis();
+        System.out.println("1耗时:" +(e1-s));
+        for (Map.Entry<String, FormularyCalculator> calculatorEntry : map.entrySet()) {
+            System.out.println( calculatorEntry.getValue().calculateWithParams());
+        }
+        long e = System.currentTimeMillis();
+        System.out.println("2耗时:" +(e-e1));
+    }
 }
