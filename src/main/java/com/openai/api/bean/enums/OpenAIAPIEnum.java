@@ -1,7 +1,10 @@
-package com.openai.api;
+package com.openai.api.bean.enums;
 
 public enum OpenAIAPIEnum {
-    COMPLETIONS("HTTPS://API.OPENAI.COM/V1/COMPLETIONS");
+    COMPLETIONS("https://api.openai.com/v1/completions"),
+    CHAT_COMPLETIONS("https://api.openai.com/v1/chat/completions")
+
+    ;
 
     private String url;
 

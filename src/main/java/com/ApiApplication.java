@@ -1,6 +1,5 @@
 package com;
 
-import lombok.val;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -13,7 +12,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 @EnableSwagger2
@@ -38,8 +36,8 @@ public class ApiApplication {
 						new InetSocketAddress("127.0.0.1", 7890)  //设置代理服务
 				)
 		);
-		requestFactory.setConnectTimeout(10*1000);
-		requestFactory.setReadTimeout(10*1000);
+		requestFactory.setConnectTimeout(30*1000);
+		requestFactory.setReadTimeout(60*1000);
 		template.setRequestFactory(requestFactory);
 		template.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
 		return template;
