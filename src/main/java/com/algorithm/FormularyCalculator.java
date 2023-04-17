@@ -17,8 +17,10 @@ public abstract class FormularyCalculator {
      * 负号占位符，用户自定义，不要冲突。
      */
     private final String negative;
-
-    private int scale = 6;
+    /**
+     * 除法时的最大精度
+     */
+    private int scale;
 
     /**
      * 公式
@@ -102,7 +104,7 @@ public abstract class FormularyCalculator {
 
 
     /**
-     * 初始化计算器
+     * 初始化计算器,加载公式和参数
      */
     public void init() {
         expression = analyze(initExpression(), initParams());
@@ -122,7 +124,7 @@ public abstract class FormularyCalculator {
             String value = entry.getValue();
             //为避免参数值和公式冲突，需要处理负号
             if (value.contains(OperatorEnum.SUBTRACT.operatorName)) {
-                value = value.replaceAll(OperatorEnum.SUBTRACT.operatorName, "F");
+                value = value.replaceAll(OperatorEnum.SUBTRACT.operatorName, negative);
             }
             expression = expression.replaceAll(entry.getKey(), value);
         }
